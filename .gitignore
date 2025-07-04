@@ -1,0 +1,7 @@
+# .gitignore
+node_modules/
+.expo/
+.expo-shared/
+.env
+*.log
+.DS_Store
