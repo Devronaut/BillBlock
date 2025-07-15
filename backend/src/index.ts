@@ -2,6 +2,9 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { checkJwt } from './middleware/auth';
 import axios from 'axios';
+import "reflect-metadata";
+import { createConnection } from "typeorm";
+import { Subscription } from "./models/Subscription";
 
 dotenv.config();
 
@@ -113,6 +116,9 @@ app.post('/fetch-subscription-emails', async (req, res): Promise<any> => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+createConnection().then(() => {
+  console.log("Connected to PostgreSQL");
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });
