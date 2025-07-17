@@ -5,6 +5,7 @@ import axios from 'axios';
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import { Subscription } from "./models/Subscription";
+import { getRepository } from "typeorm";
 
 dotenv.config();
 
@@ -108,12 +109,33 @@ app.post('/fetch-subscription-emails', async (req, res): Promise<any> => {
         amount: amountMatch ? amountMatch[0] : null,
         renewalDate: dateMatch ? dateMatch[0] : null,
       });
+
+      const subscriptionRepo = getRepository(Subscription);
+      const existing = await subscriptionRepo.findOne({ where: { emailId: msg.id } });
+      if (!existing) {
+        await subscriptionRepo.save({
+          userEmail: "codetanmoy22@gmail.com", // Or get from token/user context
+          service,
+          amount: amountMatch ? amountMatch[0] : null,
+          renewalDate: dateMatch ? dateMatch[0] : null,
+          emailId: msg.id,
+          subject,
+          snippet,
+        });
+      }
     }
 
     res.json({ messages });
   } catch (err: any) {
     res.status(500).json({ error: err.message, details: err.response?.data });
   }
+});
+
+app.get('/subscriptions', async (req, res) => {
+  const userEmail = req.query.userEmail as string; // In production, get from auth context
+  const subscriptionRepo = getRepository(Subscription);
+  const subs = await subscriptionRepo.find({ where: { userEmail } });
+  res.json(subs);
 });
 
 createConnection().then(() => {
